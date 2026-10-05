@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 public class RustRaidCalculations
 {
-    // Структура для хранения стоимости рейда одного объекта
     struct RaidCost
     {
         public int Rocket;
@@ -26,7 +25,6 @@ public class RustRaidCalculations
 
     public void fortytwo()
     {
-        // База данных прочности объектов в Rust
         Dictionary<string, RaidCost> targetCosts = new Dictionary<string, RaidCost>(StringComparer.OrdinalIgnoreCase)
         {
             { "Деревянная дверь", new RaidCost(1, 1, 2, 6, 1, 2) },
