@@ -1,336 +1,370 @@
 ﻿using System;
-using System.Security.Cryptography;
-using System.Text;
+using System.Collections.Generic;
+using System.IO;
 
-PasswordUtility util = new PasswordUtility();
-
-bool running = true;
-while (running)
+namespace GamesCatalog
 {
-    Console.ResetColor();
-    Console.WriteLine("\n=== ЖОСКО ПАРОЛЬЧИКИ ВАСЬ ===");
-    Console.WriteLine("1. Проверь пароль Вась");
-    Console.WriteLine("2. Сгенерируй случайный пароль Вась");
-    Console.WriteLine("3. Сгенерируй парольную фразу Вась");
-    Console.WriteLine("4. Выход Вась");
-    Console.WriteLine();
-    Console.Write("Выбери действие Вась 1-4: ");
-
-    string? choice = Console.ReadLine();
-
-    switch (choice)
+    class Program
     {
-        case "1":
-            string password = util.ReadPasswordHidden("Введи пароль для проверки Вась: ");
-            if (!string.IsNullOrEmpty(password))
+        const string FILE_NAME = "catalog.txt";
+
+        static List<string> names = new List<string>();
+        static List<int> years = new List<int>();
+        static List<double> ratings = new List<double>();
+        static List<bool> passedList = new List<bool>();
+        static List<string> genres = new List<string>();
+
+        static void Main(string[] args)
+        {
+            LoadData();
+
+            while (true)
             {
-                util.ProcessPasswordCheck(password);
-            }
-            break;
+                Console.Clear();
+                Console.WriteLine("=== МЕНЮ КАТАЛОГА ИГР ===");
+                Console.WriteLine("1. Показать все игры");
+                Console.WriteLine("2. Добавить новую игру");
+                Console.WriteLine("3. Найти игру по названию");
+                Console.WriteLine("4. Фильтр: Игры новее определенного года");
+                Console.WriteLine("5. Топ-3 игры по рейтингу (0-5)");
+                Console.WriteLine("6. Статистика базы данных");
+                Console.WriteLine("7. Редактировать игру");
+                Console.WriteLine("8. Удалить игру");
+                Console.WriteLine("9. Сохранить данные и выйти");
+                Console.Write("\nВыберите пункт меню: ");
 
-        case "2":
-            Console.Write("Введи длину пароля Вась от 8 до 64: ");
-            if (!int.TryParse(Console.ReadLine(), out int length) || length < 8 || length > 64)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Ля Вась длина должна быть числом Вась от 8 до 64!");
-            }
-            else
-            {
-                string generated = util.GeneratePassword(length);
-                Console.WriteLine($"\nЭто Вась сгенерированный пароль: {generated}");
-                util.ProcessPasswordCheck(generated);
-            }
-            break;
-
-        case "3":
-            Console.Write("Введи количество слов во фразе Вась: ");
-            if (!int.TryParse(Console.ReadLine(), out int count) || count <= 0)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Ля Вась введи корректное число слов!");
-            }
-            else
-            {
-                string phrase = util.GeneratePassphrase(count);
-                Console.WriteLine($"\nСгенерированная фраза: {phrase}");
-
-                double entropy = count * Math.Log2(util.GetDictionarySize());
-                Console.WriteLine($"Вась это стойкость фразы: {entropy:F1} бит");
-                util.PrintScoreEvaluation(entropy);
-            }
-            break;
-
-        case "4":
-            Console.WriteLine("Программа завершена Вась!");
-            running = false;
-            break;
-
-        default:
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Ля Вась Неверный ввод! Пробуй снова.");
-            break;
-    }
-}
-
-class PasswordUtility
-{
-    public void ProcessPasswordCheck(string password)
-    {
-        Console.WriteLine($"Длина пароля Вась: {password.Length} символов");
-
-        if (IsInPopularList(password))
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Вась ну ты лопух? Пароль находится в списке самых популярных! Он подберётся на изи.");
-            return;
-        }
-
-        if (HasSimplePattern(password))
-        {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("Вась так не делается. Пароль содержит простой шаблон!");
-        }
-
-        int alphabetSize = GetAlphabetSize(password);
-        Console.WriteLine($"Вась это размер используемого алфавита: {alphabetSize}");
-
-        double bits = GetPasswordEntropy(password);
-        Console.Write("Вась это оценка стойкости: ");
-        PrintScoreEvaluation(bits);
-
-        PrintBruteForceTime(bits);
-    }
-
-    public int GetAlphabetSize(string password)
-    {
-        bool hasLower = false;
-        bool hasUpper = false;
-        bool hasDigits = false;
-        bool hasSpecial = false;
-        bool hasRussianLower = false;
-        bool hasRussianUpper = false;
-
-        foreach (char c in password)
-        {
-            if (c >= 'a' && c <= 'z') hasLower = true;
-            else if (c >= 'A' && c <= 'Z') hasUpper = true;
-            else if (c >= '0' && c <= '9') hasDigits = true;
-            else if (c >= ' ' && c <= '~') hasSpecial = true;
-            else if (c >= 'а' && c <= 'я' || c == 'ё') hasRussianLower = true;
-            else if (c >= 'А' && c <= 'Я' || c == 'Ё') hasRussianUpper = true;
-        }
-
-        int size = 0;
-        if (hasLower) size += 26;
-        if (hasUpper) size += 26;
-        if (hasDigits) size += 10;
-        if (hasSpecial) size += 33;
-        if (hasRussianLower) size += 33;
-        if (hasRussianUpper) size += 33;
-
-        return size == 0 ? 10 : size;
-    }
-
-    public double GetPasswordEntropy(string password)
-    {
-        int N = GetAlphabetSize(password);
-        int L = password.Length;
-        double entropy = L * Math.Log2(N);
-
-        if (HasSimplePattern(password))
-        {
-            entropy -= 15;
-            if (entropy < 0) entropy = 0;
-        }
-
-        return entropy;
-    }
-
-    public void PrintScoreEvaluation(double bits)
-    {
-        Console.Write($"{bits:F1} бит -> ");
-        if (bits < 28)
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Очень слабо Вась Тебя могнут");
-        }
-        else if (bits < 36)
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Слабый Вась могнут через время");
-        }
-        else if (bits < 60)
-        {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("Средний Вась могут со временем");
-        }
-        else if (bits < 128)
-        {
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Сильный Вась почти несмогут могнуть");
-        }
-        else
-        {
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("Очень сильный Вась ты тру Адам");
-        }
-        Console.ResetColor();
-    }
-
-    public void PrintBruteForceTime(double bits)
-    {
-        double totalVariants = Math.Pow(2, bits);
-        double speedPerSecond = 10_000_000_000;
-        double seconds = (totalVariants / 2) / speedPerSecond;
-
-        Console.WriteLine($"Время подбора Вась при 10 млрд/сек: {FormatTime(seconds)}");
-
-        double slowSpeed = speedPerSecond / 1_000_000;
-        double slowSeconds = (totalVariants / 2) / slowSpeed;
-        Console.WriteLine($"Время подбора при медленном хешировании Вась: {FormatTime(slowSeconds)}");
-    }
-
-    private string FormatTime(double seconds)
-    {
-        const double AgeOfUniverse = 13.8e9 * 365.25 * 24 * 3600;
-        if (seconds > AgeOfUniverse) return "Нифига Вась этодольше возраста Вселенной Вась";
-
-        double minutes = seconds / 60;
-        if (seconds < 60) return $"{seconds:F2} сек.";
-        if (minutes < 60) return $"{minutes:F2} мин.";
-
-        double hours = minutes / 60;
-        if (hours < 24) return $"{hours:F2} час.";
-
-        double days = hours / 24;
-        if (days < 365) return $"{days:F1} дн.";
-
-        double years = days / 365.25;
-        if (years < 1000) return $"{years:F1} лет";
-        if (years < 1e6) return $"{years / 1000:F1} тыс. лет";
-        if (years < 1e9) return $"{years / 1e6:F1} млн. лет";
-
-        return $"{years / 1e9:F1} млрд. лет";
-    }
-
-    public bool IsInPopularList(string password)
-    {
-        string[] popularPasswords = {
-            "123456", "password", "123456789", "qwerty", "12345",
-            "12345678", "111111", "123123", "1234567", "password123",
-            "iloveyou", "princess", "admin", "welcome", "letmein",
-            "secret", "trustnoone", "monkey", "charlie", "football",
-            "67676767","qwerty123","jopa123","Вась425267","Серега хакер",
-        };
-
-        foreach (string p in popularPasswords)
-        {
-            if (p.Equals(password, StringComparison.OrdinalIgnoreCase)) return true;
-        }
-        return false;
-    }
-
-    public bool HasSimplePattern(string password)
-    {
-        if (password.Length < 2) return false;
-
-        bool allSame = true;
-        for (int i = 1; i < password.Length; i++)
-        {
-            if (password[i] != password[0]) { allSame = false; break; }
-        }
-        if (allSame) return true;
-
-        string lower = password.ToLower();
-        for (int i = 0; i < lower.Length - 2; i++)
-        {
-            if (lower[i + 1] == lower[i] + 1 && lower[i + 2] == lower[i] + 2) return true;
-        }
-
-        return false;
-    }
-
-    public string GeneratePassword(int length)
-    {
-        string lowers = "abcdefghijklmnopqrstuvwxyz";
-        string uppers = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        string digits = "0123456789";
-        string specials = "!@#$%^&*()_+-=[]{}|;':\",./<>?";
-
-        StringBuilder sb = new StringBuilder();
-        sb.Append(lowers[RandomNumberGenerator.GetInt32(lowers.Length)]);
-        sb.Append(uppers[RandomNumberGenerator.GetInt32(uppers.Length)]);
-        sb.Append(digits[RandomNumberGenerator.GetInt32(digits.Length)]);
-        sb.Append(specials[RandomNumberGenerator.GetInt32(specials.Length)]);
-
-        string allChars = lowers + uppers + digits + specials;
-        while (sb.Length < length)
-        {
-            int index = RandomNumberGenerator.GetInt32(allChars.Length);
-            sb.Append(allChars[index]);
-        }
-
-        char[] passwordArray = sb.ToString().ToCharArray();
-        for (int i = passwordArray.Length - 1; i > 0; i--)
-        {
-            int j = RandomNumberGenerator.GetInt32(i + 1);
-            (passwordArray[i], passwordArray[j]) = (passwordArray[j], passwordArray[i]);
-        }
-        return new string(passwordArray);
-    }
-
-    public int GetDictionarySize() => 100;
-    public string GeneratePassphrase(int wordCount)
-    {
-        string[] dictionary = {
-            "космос", "звезда", "планета", "галактика", "орбита", "спутник", "ракета", "комета", "астероид", "метеор",
-            "телескоп", "вакуум", "луна", "солнце", "марс", "юпитер", "сатурн", "венера", "меркурий", "нептун",
-            "плутон", "уран", "земля", "чернота", "дыра", "туманность", "пульсар", "квазар", "вспышка", "затмение",
-            "гравитация", "свет", "скорость", "время", "атом", "квант", "физика", "химия", "вектор", "матрица",
-            "лазер", "энергия", "плазма", "магнит", "фотон", "электрон", "протон", "нейтрон", "ядро", "орбиталь",
-            "молекула", "элемент", "система", "модуль", "станция", "корабль", "шаттл", "скафандр", "шлюз", "отсек",
-            "экипаж", "пилот", "запуск", "старт", "полет", "посадка", "стыковка", "связь", "сигнал", "антенна",
-            "радар", "лаборатория", "модель", "анализ", "данные", "индекс", "код", "программа", "сервер", "база",
-            "поток", "экран", "пульт", "кнопка", "датчик", "камера", "зонд", "ровер", "луноход", "марсоход",
-            "робот", "дроид", "киборг", "интеллект", "логика", "разум", "мудрость", "память", "проект", "вечность"
-        };
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < wordCount; i++)
-        {
-            int index = RandomNumberGenerator.GetInt32(dictionary.Length);
-            sb.Append(dictionary[index]);
-            if (i < wordCount - 1) sb.Append('-');
-        }
-        return sb.ToString();
-    }
-
-    public string ReadPasswordHidden(string prompt)
-    {
-        Console.Write(prompt);
-        StringBuilder sb = new StringBuilder();
-        while (true)
-        {
-            ConsoleKeyInfo key = Console.ReadKey(true);
-            if (key.Key == ConsoleKey.Enter)
-            {
+                string choice = Console.ReadLine();
                 Console.WriteLine();
-                break;
-            }
-            if (key.Key == ConsoleKey.Backspace)
-            {
-                if (sb.Length > 0)
+
+                switch (choice)
                 {
-                    sb.Length--;
-                    Console.Write("\b \b");
+                    case "1":
+                        ShowAllGames();
+                        break;
+                    case "2":
+                        AddNewGame();
+                        break;
+                    case "3":
+                        SearchByName();
+                        break;
+                    case "4":
+                        FilterByYear();
+                        break;
+                    case "5":
+                        ShowTop3();
+                        break;
+                    case "6":
+                        ShowStatistics();
+                        break;
+                    case "7":
+                        EditGame();
+                        break;
+                    case "8":
+                        DeleteGame();
+                        break;
+                    case "9":
+                        SaveData();
+                        Console.WriteLine("Данные успешно сохранены. До свидания!");
+                        return;
+                    default:
+                        Console.WriteLine("Неверный пункт меню. Нажмите любую клавишу для повтора...");
+                        break;
+                }
+                Console.ReadKey();
+            }
+        }
+
+        static void ShowAllGames()
+        {
+            if (names.Count == 0)
+            {
+                Console.WriteLine("Каталог пока пуст.");
+                return;
+            }
+
+            Console.WriteLine("{0,-4} {1,-25} {2,-6} {3,-8} {4,-10} {5,-15}", "№", "Название", "Год", "Рейтинг", "Пройдено", "Жанр");
+            Console.WriteLine(new string('-', 75));
+
+            for (int i = 0; i < names.Count; i++)
+            {
+                string passedText = passedList[i] ? "Да" : "Нет";
+                Console.WriteLine("{0,-4} {1,-25} {2,-6} {3,8:F1} {4,-10} {5,-15}", i + 1, names[i], years[i], ratings[i], passedText, genres[i]);
+            }
+        }
+
+        static void AddNewGame()
+        {
+            Console.WriteLine("=== ДОБАВЛЕНИЕ НОВОЙ ИГРЫ ===");
+
+            string name;
+            while (true)
+            {
+                Console.Write("Введите название игры: ");
+                name = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(name) && !name.Contains(";")) break;
+                Console.WriteLine("Ошибка! Название не может быть пустым и не должно содержать символ ';'.");
+            }
+
+            int year;
+            while (true)
+            {
+                Console.Write("Введите год выпуска: ");
+                if (int.TryParse(Console.ReadLine(), out year) && year > 1950 && year <= DateTime.Now.Year + 1) break;
+                Console.Write("Некорректный год. ");
+            }
+
+            double rating;
+            while (true)
+            {
+                Console.Write("Введите рейтинг (от 0 до 5, в РФ через запятую): ");
+                if (double.TryParse(Console.ReadLine(), out rating) && rating >= 0 && rating <= 5) break;
+                Console.Write("Некорректный формат рейтинга. ");
+            }
+
+            bool passed;
+            while (true)
+            {
+                Console.Write("Игра пройдена? (да/нет): ");
+                string input = Console.ReadLine().ToLower().Trim();
+                if (input == "да" || input == "yes") { passed = true; break; }
+                if (input == "нет" || input == "no") { passed = false; break; }
+                Console.Write("Ответьте 'да' или 'нет'. ");
+            }
+
+            Console.Write("Введите жанр игры: ");
+            string genre = Console.ReadLine();
+
+            names.Add(name);
+            years.Add(year);
+            ratings.Add(rating);
+            passedList.Add(passed);
+            genres.Add(genre);
+
+            Console.WriteLine("\nИгра успешно добавлена в память!");
+        }
+
+        static void SearchByName()
+        {
+            Console.Write("Введите название игры или его часть для поиска: ");
+            string searchInput = Console.ReadLine().ToLower();
+
+            bool found = false;
+            Console.WriteLine("\nРезультаты поиска:");
+
+            for (int i = 0; i < names.Count; i++)
+            {
+                if (names[i].ToLower().Contains(searchInput))
+                {
+                    string passedText = passedList[i] ? "Да" : "Нет";
+                    Console.WriteLine("- {0} ({1} г., Рейтинг: {2:F1}, Пройдено: {3}, Жанр: {4})", names[i], years[i], ratings[i], passedText, genres[i]);
+                    found = true;
                 }
             }
-            else if (key.KeyChar != '\u0000')
+
+            if (!found)
             {
-                sb.Append(key.KeyChar);
-                Console.Write('*');
+                Console.WriteLine("Ничего не найдено.");
             }
         }
-        return sb.ToString();
+
+        static void FilterByYear()
+        {
+            Console.Write("Показать игры, выпущенные строго после какого года? ");
+            int filterYear;
+            while (true)
+            {
+                if (int.TryParse(Console.ReadLine(), out filterYear)) break;
+                Console.Write("Это не число. Ещё раз: ");
+            }
+
+            bool found = false;
+            Console.WriteLine($"\nИгры, выпущенные после {filterYear} года:");
+            for (int i = 0; i < names.Count; i++)
+            {
+                if (years[i] > filterYear)
+                {
+                    Console.WriteLine($"- {names[i]} ({years[i]} г.)");
+                    found = true;
+                }
+            }
+
+            if (!found) Console.WriteLine("Нет таких игр.");
+        }
+
+        static void ShowTop3()
+        {
+            if (names.Count == 0)
+            {
+                Console.WriteLine("Каталог пуст.");
+                return;
+            }
+
+            Console.WriteLine("=== ТОП-3 ИГРЫ ПО РЕЙТИНГУ ===");
+
+            List<int> usedIndices = new List<int>();
+
+            int itemsToShow = Math.Min(3, names.Count);
+            for (int step = 0; step < itemsToShow; step++)
+            {
+                double maxRating = -1;
+                int bestIndex = -1;
+
+                for (int i = 0; i < names.Count; i++)
+                {
+                    if (!usedIndices.Contains(i) && ratings[i] > maxRating)
+                    {
+                        maxRating = ratings[i];
+                        bestIndex = i;
+                    }
+                }
+
+                if (bestIndex != -1)
+                {
+                    Console.WriteLine("{0}. {1} — Рейтинг: {2:F1}", step + 1, names[bestIndex], ratings[bestIndex]);
+                    usedIndices.Add(bestIndex);
+                }
+            }
+        }
+
+        static void ShowStatistics()
+        {
+            if (names.Count == 0)
+            {
+                Console.WriteLine("База пуста. Статистика недоступна.");
+                return;
+            }
+
+            int totalCount = names.Count;
+            double ratingSum = 0;
+            int passedCount = 0;
+
+            for (int i = 0; i < totalCount; i++)
+            {
+                ratingSum += ratings[i];
+                if (passedList[i]) passedCount++;
+            }
+
+            double averageRating = ratingSum / totalCount;
+            double passedPercentage = ((double)passedCount / totalCount) * 100;
+
+            Console.WriteLine("=== СТАТИСТИКА КАТАЛОГА ===");
+            Console.WriteLine("Всего игр в базе: {0}", totalCount);
+            Console.WriteLine("Средний рейтинг всех игр (без формата): {0}", averageRating);
+            Console.WriteLine("Средний рейтинг всех игр (формат F2): {0:F2}", averageRating);
+            Console.WriteLine("Пройдено игр: {0} из {1} ({2:F1}%)", passedCount, totalCount, passedPercentage);
+        }
+        static void EditGame()
+        {
+            Console.WriteLine("=== РЕДАКТИРОВАНИЕ ИГРЫ ===");
+            if (names.Count == 0)
+            {
+                Console.WriteLine("Каталог пуст.");
+                return;
+            }
+            ShowAllGames();
+            Console.Write("\nВведите номер игры для редактирования: ");
+            int number;
+            if (int.TryParse(Console.ReadLine(), out number) && number > 0 && number <= names.Count)
+            {
+                int index = number - 1;
+                Console.WriteLine($"\nРедактируем: {names[index]}. Оставьте строку пустой, если не хотите менять поле.");
+
+                Console.Write($"Новое название [{names[index]}]: ");
+                string newName = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(newName) && !newName.Contains(";")) names[index] = newName;
+
+                Console.Write($"Новый год выпуска [{years[index]}]: ");
+                string yearInput = Console.ReadLine();
+                int newYear;
+                if (int.TryParse(yearInput, out newYear)) years[index] = newYear;
+
+                Console.Write($"Новый рейтинг [{ratings[index]}]: ");
+                string ratingInput = Console.ReadLine();
+                double newRating;
+                if (double.TryParse(ratingInput, out newRating) && newRating >= 0 && newRating <= 5) ratings[index] = newRating;
+
+                Console.Write($"Пройдена? (да/нет) [{(passedList[index] ? "да" : "нет")}]: ");
+                string passedInput = Console.ReadLine().ToLower().Trim();
+                if (passedInput == "да") passedList[index] = true;
+                if (passedInput == "нет") passedList[index] = false;
+
+                Console.Write($"Новый жанр [{genres[index]}]: ");
+                string newGenre = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(newGenre)) genres[index] = newGenre;
+                Console.WriteLine("\nДанные успешно обновлены!");
+            }
+            else
+            {
+                Console.WriteLine("Неверный номер.");
+            }
+        }
+
+        static void DeleteGame()
+        {
+            Console.WriteLine("=== УДАЛЕНИЕ ИГРЫ ===");
+            if (names.Count == 0)
+            {
+                Console.WriteLine("Каталог пуст.");
+                return;
+            }
+            ShowAllGames();
+            Console.Write("\nВведите номер игры для удаления: ");
+            int number;
+            if (int.TryParse(Console.ReadLine(), out number) && number > 0 && number <= names.Count)
+            {
+                int index = number - 1;
+                string nameToRemove = names[index];
+
+                names.RemoveAt(index);
+                years.RemoveAt(index);
+                ratings.RemoveAt(index);
+                passedList.RemoveAt(index);
+                genres.RemoveAt(index);
+                Console.WriteLine($"\nИгра '{nameToRemove}' успешно удалена.");
+            }
+            else
+            {
+                Console.WriteLine("Неверный номер.");
+            }
+        }
+
+        static void SaveData()
+        {
+            string[] linesToSave = new string[names.Count];
+            for (int i = 0; i < names.Count; i++)
+            {
+                linesToSave[i] = $"{names[i]};{years[i]};{ratings[i]};{passedList[i]};{genres[i]}";
+            }
+            File.WriteAllLines(FILE_NAME, linesToSave);
+        }
+
+        static void LoadData()
+        {
+            if (!File.Exists(FILE_NAME)) return;
+            string[] loadedLines = File.ReadAllLines(FILE_NAME);
+            foreach (string line in loadedLines)
+            {
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                string[] parts = line.Split(';');
+                if (parts.Length < 5) continue;
+                try
+                {
+                    string name = parts[0];
+                    int year = int.Parse(parts[1]);
+                    double rating = double.Parse(parts[2]);
+                    bool passed = bool.Parse(parts[3]);
+                    string genre = parts[4];
+                    names.Add(name);
+                    years.Add(year);
+                    ratings.Add(rating);
+                    passedList.Add(passed);
+                    genres.Add(genre);
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+            }
+        }
     }
 }

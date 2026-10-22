@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\1412\\source\\repos\\Password\\Password\\Password.csproj",
-      "projectName": "Password",
-      "projectPath": "C:\\Users\\1412\\source\\repos\\Password\\Password\\Password.csproj",
+      "projectUniqueName": "C:\\Users\\1412\\source\\repos\\Mybaza\\Mybaza\\Mybaza.csproj",
+      "projectName": "Mybaza",
+      "projectPath": "C:\\Users\\1412\\source\\repos\\Mybaza\\Mybaza\\Mybaza.csproj",
       "packagesPath": "C:\\Users\\1412\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\1412\\source\\repos\\Password\\Password\\obj\\",
+      "outputPath": "C:\\Users\\1412\\source\\repos\\Mybaza\\Mybaza\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\1412\\AppData\\Roaming\\NuGet\\NuGet.Config",

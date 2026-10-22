@@ -1,0 +1,14 @@
+C:\Users\1412\source\repos\Mybaza\Mybaza\bin\Debug\net8.0\Mybaza.exe
+C:\Users\1412\source\repos\Mybaza\Mybaza\bin\Debug\net8.0\Mybaza.deps.json
+C:\Users\1412\source\repos\Mybaza\Mybaza\bin\Debug\net8.0\Mybaza.runtimeconfig.json
+C:\Users\1412\source\repos\Mybaza\Mybaza\bin\Debug\net8.0\Mybaza.dll
+C:\Users\1412\source\repos\Mybaza\Mybaza\bin\Debug\net8.0\Mybaza.pdb
+C:\Users\1412\source\repos\Mybaza\Mybaza\obj\Debug\net8.0\Mybaza.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\1412\source\repos\Mybaza\Mybaza\obj\Debug\net8.0\Mybaza.AssemblyInfoInputs.cache
+C:\Users\1412\source\repos\Mybaza\Mybaza\obj\Debug\net8.0\Mybaza.AssemblyInfo.cs
+C:\Users\1412\source\repos\Mybaza\Mybaza\obj\Debug\net8.0\Mybaza.csproj.CoreCompileInputs.cache
+C:\Users\1412\source\repos\Mybaza\Mybaza\obj\Debug\net8.0\Mybaza.dll
+C:\Users\1412\source\repos\Mybaza\Mybaza\obj\Debug\net8.0\refint\Mybaza.dll
+C:\Users\1412\source\repos\Mybaza\Mybaza\obj\Debug\net8.0\Mybaza.pdb
+C:\Users\1412\source\repos\Mybaza\Mybaza\obj\Debug\net8.0\Mybaza.genruntimeconfig.cache
+C:\Users\1412\source\repos\Mybaza\Mybaza\obj\Debug\net8.0\ref\Mybaza.dll
