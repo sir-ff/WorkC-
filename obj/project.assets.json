@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\1412\\source\\repos\\Mybaza\\Mybaza\\Mybaza.csproj",
-      "projectName": "Mybaza",
-      "projectPath": "C:\\Users\\1412\\source\\repos\\Mybaza\\Mybaza\\Mybaza.csproj",
+      "projectUniqueName": "C:\\Users\\1412\\source\\repos\\training\\training\\training.csproj",
+      "projectName": "training",
+      "projectPath": "C:\\Users\\1412\\source\\repos\\training\\training\\training.csproj",
       "packagesPath": "C:\\Users\\1412\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\1412\\source\\repos\\Mybaza\\Mybaza\\obj\\",
+      "outputPath": "C:\\Users\\1412\\source\\repos\\training\\training\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\1412\\AppData\\Roaming\\NuGet\\NuGet.Config",
