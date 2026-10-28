@@ -1,8 +1,0 @@
-Rust;2013;5;False;выживание
-STALZONE;2014;3,9;False;MMOFPS
-Euro Truck Simulator2;2012;4,5;False;Симулятор
-Nomad Drive;2026;3,7;False;Симулятор 
-Car Mechanic Simulator2;2021;4;False;Симулятор
-House Flipper;2018;4;False;Симулятор
-Counter Strike 2;2023;4,1;False;Шутер
-BeamNG.drive;2013;4,8;False;Симулятор
